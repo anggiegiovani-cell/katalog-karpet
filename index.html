@@ -7,28 +7,30 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .filter-btn.active { background-color: #3b82f6; color: white; border-color: #3b82f6; }
-        .loading-spinner { border-top-color: #3b82f6; animation: spinner 1s linear infinite; }
-        @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* Style untuk Modal Zoom */
+        #modal-zoom { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 50; cursor: zoom-out; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
 
     <header class="bg-white shadow-md sticky top-0 z-20 p-4">
-        <h1 class="text-xl font-extrabold text-center text-gray-800">KATALOG KARPET</h1>
-        
+        <h1 class="text-xl font-extrabold text-center text-gray-800 tracking-tight">KATALOG KARPET</h1>
         <div id="filter-bar" class="flex gap-2 overflow-x-auto py-3 mt-2 no-scrollbar">
             <button onclick="filterProduk('Semua')" class="filter-btn active whitespace-nowrap px-4 py-1.5 rounded-full border border-gray-300 text-sm font-medium transition">Semua</button>
-            </div>
+        </div>
     </header>
+
+    <div id="modal-zoom" onclick="closeZoom()" class="flex items-center justify-center p-4">
+        <img id="img-zoom" class="max-w-full max-h-full rounded-lg shadow-2xl">
+    </div>
 
     <main class="p-4 max-w-2xl mx-auto">
         <div id="loading" class="flex flex-col items-center justify-center mt-20">
-            <div class="loading-spinner w-10 h-10 border-4 border-gray-200 rounded-full mb-4"></div>
-            <p class="text-gray-500">Memuat koleksi terbaru...</p>
+            <div class="w-10 h-10 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin mb-4"></div>
+            <p class="text-gray-500">Memuat koleksi...</p>
         </div>
-
-        <div id="katalog-container" class="grid grid-cols-2 gap-3 sm:gap-6 hidden">
-            </div>
+        <div id="katalog-container" class="grid grid-cols-2 gap-3 sm:gap-6 hidden"></div>
     </main>
 
     <script>
@@ -36,6 +38,13 @@
         const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
         
         let semuaProduk = [];
+
+        // Fungsi format angka ke ribuan (1.000.000)
+        function formatRupiah(angka) {
+            if (!angka) return "0";
+            let stringAngka = angka.toString().replace(/[^0-9]/g, '');
+            return stringAngka.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
 
         async function initKatalog() {
             try {
@@ -55,20 +64,14 @@
 
                 tampilkanTombolFilter();
                 tampilkanProduk(semuaProduk);
-                
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('katalog-container').classList.remove('hidden');
-
-            } catch (error) {
-                console.error('Error:', error);
-                document.getElementById('loading').innerHTML = '<p class="text-red-500 text-center">Gagal memuat data. Periksa koneksi atau Google Sheets Anda.</p>';
-            }
+            } catch (e) { console.error(e); }
         }
 
         function tampilkanTombolFilter() {
             const filterBar = document.getElementById('filter-bar');
             const daftarKoleksi = [...new Set(semuaProduk.map(p => p.koleksi))];
-
             daftarKoleksi.forEach(kls => {
                 const btn = document.createElement('button');
                 btn.innerText = kls;
@@ -79,35 +82,35 @@
         }
 
         function filterProduk(kategori, btnEle) {
-            // Update UI Tombol
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active', 'bg-blue-500', 'text-white'));
             if(btnEle) btnEle.classList.add('active');
-            else document.querySelector('.filter-btn').classList.add('active');
-
-            const filtered = kategori === 'Semua' 
-                ? semuaProduk 
-                : semuaProduk.filter(p => p.koleksi === kategori);
-            
+            const filtered = kategori === 'Semua' ? semuaProduk : semuaProduk.filter(p => p.koleksi === kategori);
             tampilkanProduk(filtered);
+        }
+
+        function openZoom(src) {
+            document.getElementById('img-zoom').src = src;
+            document.getElementById('modal-zoom').style.display = 'flex';
+        }
+
+        function closeZoom() {
+            document.getElementById('modal-zoom').style.display = 'none';
         }
 
         function tampilkanProduk(produk) {
             const container = document.getElementById('katalog-container');
             container.innerHTML = '';
-
             produk.forEach(item => {
-                const card = `
+                container.innerHTML += `
                     <div class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
-                        <img src="${item.foto}" class="w-full h-40 object-cover" onerror="this.src='https://via.placeholder.com/400x300?text=Foto+Tidak+Tersedia'">
+                        <img src="${item.foto}" onclick="openZoom('${item.foto}')" class="w-full h-40 object-cover cursor-pointer hover:opacity-90 transition">
                         <div class="p-3">
-                            <p class="text-[10px] uppercase tracking-wider text-blue-600 font-bold">${item.koleksi}</p>
+                            <p class="text-[10px] uppercase text-blue-600 font-bold">${item.koleksi}</p>
                             <h3 class="font-bold text-gray-800 text-sm truncate">${item.nama}</h3>
                             <p class="text-xs text-gray-500 mt-1">Ukuran: ${item.ukuran}</p>
-                            <p class="text-blue-700 font-black text-sm mt-2">Rp ${item.harga}</p>
+                            <p class="text-blue-700 font-black text-sm mt-2">Rp ${formatRupiah(item.harga)}</p>
                             <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-                                <span class="text-[10px] ${item.stok != '0' ? 'text-green-600' : 'text-red-600'} font-bold">
-                                    ● Stok: ${item.stok}
-                                </span>
+                                <span class="text-[10px] ${item.stok != '0' ? 'text-green-600' : 'text-red-600'} font-bold">● Stok: ${item.stok}</span>
                                 <a href="https://wa.me/6287881807772?text=Halo, stok karpet ${item.koleksi} ${item.nama} ukuran ${item.ukuran} masih ada?" 
                                    class="bg-green-500 text-white p-1.5 rounded-full shadow-sm">
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.588-5.946 0-6.556 5.332-11.891 11.891-11.891 3.181 0 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.481 8.403 0 6.556-5.332 11.891-11.891 11.891-2.003 0-3.976-.506-5.713-1.468l-6.18 1.686zm10.37-3.935c1.697 0 3.354-.456 4.798-1.319l.344-.205 3.568.935-.952-3.48.226-.359c.953-1.517 1.456-3.284 1.456-5.101 0-5.181-4.215-9.395-9.395-9.395-2.51 0-4.87.98-6.642 2.753-1.774 1.773-2.751 4.133-2.751 6.642 0 1.942.569 3.837 1.644 5.47l.255.388-1.091 3.987 4.085-1.116.379.225c1.472.873 3.161 1.334 4.877 1.334z"/></svg>
@@ -116,10 +119,8 @@
                         </div>
                     </div>
                 `;
-                container.innerHTML += card;
             });
         }
-
         initKatalog();
     </script>
 </body>
