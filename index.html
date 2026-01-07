@@ -3,38 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aneka Karpet Indah - Katalog</title>
+    <title>Aneka Karpet Indah - Katalog Resmi</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .filter-btn.active { background-color: #3b82f6; color: white; border-color: #3b82f6; }
-        .ukuran-btn.selected { background-color: #3b82f6; color: white; border-color: #3b82f6; }
-        #modal-zoom { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; cursor: zoom-out; }
+        .ukuran-btn.selected { background-color: #3b82f6; color: white; border-color: #3b82f6; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3); }
+        #modal-zoom { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 100; cursor: zoom-out; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen pb-20">
+<body class="bg-gray-100 min-h-screen pb-20 font-sans">
 
-    <header class="bg-white shadow-md sticky top-0 z-20 p-4">
-        <div class="flex justify-center mb-4">
-            <img src="https://i.ibb.co.com/Gv2LpsVy/Aneka-Karpet-Indah-logo-page-0001.jpg" alt="Logo" class="h-16 w-auto">
-        </div>
-        <input type="text" id="search-input" onkeyup="cariProduk()" placeholder="Cari motif..." class="w-full px-4 py-2 border rounded-xl text-sm mb-3 focus:ring-2 focus:ring-blue-500 outline-none">
-        <div id="filter-bar" class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-            <button onclick="filterProduk('Semua')" class="filter-btn active whitespace-nowrap px-4 py-1 rounded-full border text-xs font-bold uppercase">Semua</button>
+    <header class="bg-white shadow-md sticky top-0 z-20">
+        <div class="p-4">
+            <div class="flex justify-center mb-4">
+                <img src="https://i.ibb.co.com/Gv2LpsVy/Aneka-Karpet-Indah-logo-page-0001.jpg" 
+                     alt="Logo Aneka Karpet Indah" 
+                     class="h-20 w-auto object-contain">
+            </div>
+            
+            <div class="relative mb-3">
+                <input type="text" id="search-input" onkeyup="cariProduk()" placeholder="Cari nama motif atau merk..." 
+                    class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm shadow-sm transition-all">
+                <div class="absolute left-3 top-3 text-gray-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+            </div>
+
+            <div id="filter-bar" class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                <button onclick="filterProduk('Semua', this)" class="filter-btn active whitespace-nowrap px-5 py-1.5 rounded-full border border-gray-300 text-[10px] font-bold uppercase tracking-wider transition">Semua</button>
+            </div>
         </div>
     </header>
 
     <div id="modal-zoom" onclick="closeZoom()" class="flex items-center justify-center p-4">
-        <img id="img-zoom" class="max-w-full max-h-full rounded-lg shadow-2xl">
+        <img id="img-zoom" class="max-w-full max-h-full rounded-lg shadow-2xl transition-transform duration-300">
     </div>
 
     <main class="p-4 max-w-2xl mx-auto">
         <div id="loading" class="flex flex-col items-center justify-center mt-20">
             <div class="w-10 h-10 border-4 border-gray-100 border-t-blue-600 rounded-full animate-spin mb-4"></div>
-            <p class="text-gray-500 text-sm">Menyusun koleksi...</p>
+            <p class="text-gray-500 text-sm font-medium">Menyusun Katalog...</p>
         </div>
-        <div id="katalog-container" class="grid grid-cols-2 gap-4 hidden"></div>
+        <div id="katalog-container" class="grid grid-cols-2 gap-3 sm:gap-6 hidden"></div>
     </main>
+
+    <a href="https://www.instagram.com/anekakarpetjogja/" target="_blank" class="fixed bottom-6 right-6 bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 text-white p-3.5 rounded-full shadow-2xl z-30 hover:scale-110 active:scale-95 transition">
+        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+    </a>
 
     <script>
         const SHEET_ID = '1iLJWtfJntcjZalA7q-FFIUNe8BXGT40za7kMeELXfJk';
@@ -45,7 +61,9 @@
         let kategoriAktif = 'Semua';
 
         function formatRupiah(angka) {
-            return angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            if (!angka) return "0";
+            let stringAngka = angka.toString().replace(/[^0-9]/g, '');
+            return stringAngka.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         }
 
         async function initKatalog() {
@@ -55,14 +73,13 @@
                 const data = JSON.parse(text.substr(47).slice(0, -2));
                 const rows = data.table.rows;
 
-                // Reset data
                 produkGrouped = {};
                 const daftarKoleksi = new Set();
 
                 rows.forEach(row => {
                     const koleksi = row.c[0] ? row.c[0].v : 'Lainnya';
                     const nama = row.c[1] ? row.c[1].v : 'Tanpa Nama';
-                    const idProduk = `${koleksi}-${nama}`; // Kunci unik gabungan merk & motif
+                    const idProduk = `${koleksi}-${nama}`;
 
                     daftarKoleksi.add(koleksi);
 
@@ -80,6 +97,15 @@
                     });
                 });
 
+                // Auto-Sort Ukuran (Kecil ke Besar) di setiap produk
+                Object.values(produkGrouped).forEach(p => {
+                    p.variasi.sort((a, b) => {
+                        let sizeA = parseInt(a.ukuran.replace(/[^0-9]/g, '')) || 0;
+                        let sizeB = parseInt(b.ukuran.replace(/[^0-9]/g, '')) || 0;
+                        return sizeA - sizeB;
+                    });
+                });
+
                 tampilkanTombolFilter(Array.from(daftarKoleksi));
                 cariProduk();
                 document.getElementById('loading').classList.add('hidden');
@@ -87,20 +113,22 @@
             } catch (e) { console.error(e); }
         }
 
-        function tampilkanTombolFilter(koleksi) {
+        function tampilkanTombolFilter(koleksiList) {
             const bar = document.getElementById('filter-bar');
-            koleksi.forEach(kls => {
+            koleksiList.sort().forEach(kls => {
                 const btn = document.createElement('button');
                 btn.innerText = kls;
-                btn.className = "filter-btn whitespace-nowrap px-4 py-1 rounded-full border text-xs font-bold uppercase bg-white shadow-sm";
-                btn.onclick = (e) => {
-                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    kategoriAktif = kls;
-                    cariProduk();
-                };
+                btn.className = "filter-btn whitespace-nowrap px-5 py-1.5 rounded-full border border-gray-300 text-[10px] font-bold uppercase tracking-wider transition bg-white shadow-sm";
+                btn.onclick = () => filterProduk(kls, btn);
                 bar.appendChild(btn);
             });
+        }
+
+        function filterProduk(kategori, btnEle) {
+            kategoriAktif = kategori;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active', 'bg-blue-500', 'text-white'));
+            btnEle.classList.add('active');
+            cariProduk();
         }
 
         function cariProduk() {
@@ -112,38 +140,37 @@
                 if (kategoriAktif !== 'Semua' && p.koleksi !== kategoriAktif) return;
                 if (keyword && !p.nama.toLowerCase().includes(keyword) && !p.koleksi.toLowerCase().includes(keyword)) return;
 
-                // Default variasi pertama
-                const v = p.variasi[0];
+                const vDefault = p.variasi[0];
                 const cardId = `card-${idx}`;
 
                 container.innerHTML += `
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col overflow-hidden">
-                        <img src="${p.foto}" onclick="openZoom('${p.foto}')" class="w-full h-32 sm:h-40 object-cover cursor-pointer hover:opacity-90 transition">
-                        <div class="p-2 flex-grow flex flex-col">
-                            <p class="text-[8px] font-bold text-blue-600 uppercase mb-1">${p.koleksi}</p>
-                            <h3 class="font-bold text-gray-800 text-[11px] leading-tight mb-2 h-8 overflow-hidden">${p.nama}</h3>
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 flex flex-col overflow-hidden transition-all hover:shadow-md">
+                        <img src="${p.foto}" onclick="openZoom('${p.foto}')" class="w-full h-36 sm:h-44 object-cover cursor-pointer hover:opacity-90 transition">
+                        <div class="p-3 flex-grow flex flex-col">
+                            <p class="text-[9px] font-bold text-blue-600 uppercase mb-1 tracking-widest">${p.koleksi}</p>
+                            <h3 class="font-bold text-gray-800 text-[12px] leading-tight mb-3 h-9 overflow-hidden">${p.nama}</h3>
                             
-                            <div class="mb-2">
-                                <p class="text-[9px] text-gray-400 mb-1">Pilih Ukuran:</p>
-                                <div class="flex flex-wrap gap-1">
-                                    ${p.variasi.map((varItem, vIdx) => `
-                                        <button onclick="updateVarian('${cardId}', '${varItem.ukuran}', '${varItem.harga}', '${varItem.stok}', this)" 
-                                            class="ukuran-btn text-[9px] border px-1.5 py-0.5 rounded ${vIdx === 0 ? 'selected bg-blue-500 text-white' : 'bg-gray-50'}">
-                                            ${varItem.ukuran}
+                            <div class="mb-3">
+                                <p class="text-[9px] text-gray-400 font-bold mb-1.5 uppercase">Tersedia Ukuran:</p>
+                                <div class="flex flex-wrap gap-1.5">
+                                    ${p.variasi.map((v, vIdx) => `
+                                        <button onclick="updateVarian('${cardId}', '${v.ukuran}', '${v.harga}', '${v.stok}', this)" 
+                                            class="ukuran-btn text-[9px] border border-gray-200 px-2 py-1 rounded-md font-bold transition ${vIdx === 0 ? 'selected bg-blue-500 text-white' : 'bg-gray-50 text-gray-600'}">
+                                            ${v.ukuran}
                                         </button>
                                     `).join('')}
                                 </div>
                             </div>
 
-                            <div class="mt-auto pt-2 border-t border-gray-100">
-                                <p id="${cardId}-harga" class="text-blue-700 font-black text-xs mb-1">Rp ${formatRupiah(v.harga)}</p>
+                            <div class="mt-auto pt-3 border-t border-gray-100">
+                                <p id="${cardId}-harga" class="text-blue-700 font-black text-[14px] mb-2 tracking-tight">Rp ${formatRupiah(vDefault.harga)}</p>
                                 <div class="flex items-center justify-between">
-                                    <span id="${cardId}-stok" class="text-[8px] font-bold uppercase italic ${v.stok != '0' ? 'text-green-600' : 'text-red-600'}">
-                                        ● ${v.stok != '0' ? 'Stok: ' + v.stok : 'Habis'}
+                                    <span id="${cardId}-stok" class="text-[9px] font-bold uppercase italic ${vDefault.stok != '0' ? 'text-green-600' : 'text-red-600'}">
+                                        ● ${vDefault.stok != '0' ? 'Stok: ' + vDefault.stok : 'Habis'}
                                     </span>
-                                    <a id="${cardId}-wa" href="https://wa.me/${WA_NUMBER}?text=Halo, tanya karpet ${p.koleksi} ${p.nama} ukuran ${v.ukuran}" 
-                                       class="bg-green-500 text-white p-1.5 rounded-full shadow-md">
-                                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.588-5.946 0-6.556 5.332-11.891 11.891-11.891 3.181 0 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.481 8.403 0 6.556-5.332 11.891-11.891 11.891-2.003 0-3.976-.506-5.713-1.468l-6.18 1.686zm10.37-3.935c1.697 0 3.354-.456 4.798-1.319l.344-.205 3.568.935-.952-3.48.226-.359c.953-1.517 1.456-3.284 1.456-5.101 0-5.181-4.215-9.395-9.395-9.395-2.51 0-4.87.98-6.642 2.753-1.774 1.773-2.751 4.133-2.751 6.642 0 1.942.569 3.837 1.644 5.47l.255.388-1.091 3.987 4.085-1.116.379.225c1.472.873 3.161 1.334 4.877 1.334z"/></svg>
+                                    <a id="${cardId}-wa" href="https://wa.me/${WA_NUMBER}?text=Halo Admin Aneka Karpet, tanya stok karpet ${p.koleksi} ${p.nama} ukuran ${vDefault.ukuran}" 
+                                       class="bg-green-500 text-white p-2 rounded-full shadow-lg hover:bg-green-600 transition active:scale-90">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.588-5.946 0-6.556 5.332-11.891 11.891-11.891 3.181 0 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.481 8.403 0 6.556-5.332 11.891-11.891 11.891-2.003 0-3.976-.506-5.713-1.468l-6.18 1.686zm10.37-3.935c1.697 0 3.354-.456 4.798-1.319l.344-.205 3.568.935-.952-3.48.226-.359c.953-1.517 1.456-3.284 1.456-5.101 0-5.181-4.215-9.395-9.395-9.395-2.51 0-4.87.98-6.642 2.753-1.774 1.773-2.751 4.133-2.751 6.642 0 1.942.569 3.837 1.644 5.47l.255.388-1.091 3.987 4.085-1.116.379.225c1.472.873 3.161 1.334 4.877 1.334z"/></svg>
                                     </a>
                                 </div>
                             </div>
@@ -157,22 +184,21 @@
             document.getElementById(`${cardId}-harga`).innerText = `Rp ${formatRupiah(harga)}`;
             const stokEl = document.getElementById(`${cardId}-stok`);
             stokEl.innerText = `● ${stok != '0' ? 'Stok: ' + stok : 'Habis'}`;
-            stokEl.className = `text-[8px] font-bold uppercase italic ${stok != '0' ? 'text-green-600' : 'text-red-600'}`;
+            stokEl.className = `text-[9px] font-bold uppercase italic ${stok != '0' ? 'text-green-600' : 'text-red-600'}`;
             
-            // Update WA Link
             const waLink = document.getElementById(`${cardId}-wa`);
-            const baseUrl = waLink.href.split('?text=')[0];
-            const namaKarpet = btn.closest('.p-2').querySelector('h3').innerText;
-            const merk = btn.closest('.p-2').querySelector('p').innerText;
-            waLink.href = `${baseUrl}?text=Halo, tanya karpet ${merk} ${namaKarpet} ukuran ${ukuran}`;
+            const container = btn.closest('.p-3');
+            const nama = container.querySelector('h3').innerText;
+            const merk = container.querySelector('p').innerText;
+            waLink.href = `https://wa.me/${WA_NUMBER}?text=Halo Admin Aneka Karpet, tanya stok karpet ${merk} ${nama} ukuran ${ukuran}`;
 
-            // Update Button Style
             btn.parentElement.querySelectorAll('.ukuran-btn').forEach(b => b.classList.remove('selected', 'bg-blue-500', 'text-white'));
             btn.classList.add('selected', 'bg-blue-500', 'text-white');
         }
 
         function openZoom(src) { document.getElementById('img-zoom').src = src; document.getElementById('modal-zoom').style.display = 'flex'; }
         function closeZoom() { document.getElementById('modal-zoom').style.display = 'none'; }
+        
         initKatalog();
     </script>
 </body>
