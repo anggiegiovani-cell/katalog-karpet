@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Katalog Karpet Digital</title>
+    <title>Aneka Karpet Indah - Katalog Resmi</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = { darkMode: 'class' }
@@ -13,6 +13,10 @@
         .ukuran-btn.selected { background-color: #3b82f6; color: white; border-color: #3b82f6; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3); }
         #modal-zoom { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 100; cursor: zoom-out; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
+        /* Animasi halus saat gambar muncul */
+        img { transition: opacity 0.3s; }
+        img[loading="lazy"] { opacity: 0; }
+        img.loaded { opacity: 1; }
     </style>
 </head>
 <body class="bg-gray-100 dark:bg-zinc-900 min-h-screen pb-20 font-sans transition-colors duration-300 text-gray-800 dark:text-gray-200">
@@ -20,13 +24,13 @@
     <header class="bg-white dark:bg-zinc-800 shadow-md sticky top-0 z-50">
         <div class="p-4 flex flex-col gap-3">
             <div class="flex items-center justify-between">
-                <h1 class="text-xl font-black tracking-tighter text-gray-900 dark:text-white uppercase italic">Katalog Karpet</h1>
+                <h1 class="text-xl font-black tracking-tighter text-gray-900 dark:text-white uppercase italic">Aneka Karpet Indah</h1>
                 <button onclick="toggleDarkMode()" class="p-2 rounded-xl bg-gray-100 dark:bg-zinc-700 text-gray-800 dark:text-yellow-400">
                     <svg id="theme-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
                 </button>
             </div>
             <div class="relative">
-                <input type="text" id="search-input" onkeyup="cariProduk()" placeholder="Cari motif karpet..." class="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-gray-50 dark:bg-zinc-700 border-none focus:ring-2 focus:ring-blue-500 text-sm">
+                <input type="text" id="search-input" onkeyup="cariProduk()" placeholder="Cari merk atau motif..." class="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-gray-50 dark:bg-zinc-700 border-none focus:ring-2 focus:ring-blue-500 text-sm">
                 <svg class="w-4 h-4 absolute left-3.5 top-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
             </div>
         </div>
@@ -37,7 +41,7 @@
 
     <main class="p-3 max-w-5xl mx-auto">
         <div id="katalog-container" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            <div class="col-span-full py-20 text-center animate-pulse">Memuat koleksi...</div>
+            <div class="col-span-full py-20 text-center text-gray-500">Memuat ratusan koleksi...</div>
         </div>
     </main>
 
@@ -62,18 +66,26 @@
                 const rows = json.table.rows;
                 
                 let tempGroup = {};
+                let uniqueID = 0;
+
                 rows.forEach(row => {
                     if(!row.c[0]) return;
-                    const koleksi = row.c[0].v;
-                    const nama = row.c[1] ? row.c[1].v : 'Tanpa Nama';
-                    const ukuran = row.c[2] ? row.c[2].v : '-';
+                    const koleksi = row.c[0] ? String(row.c[0].v) : 'Lainnya';
+                    const namaRaw = row.c[1] ? String(row.c[1].v).trim() : '';
+                    const ukuran = row.c[2] ? String(row.c[2].v) : '-';
                     const harga = row.c[3] ? row.c[3].v : 0;
                     const stok = row.c[4] ? row.c[4].v : 0;
-                    const foto = row.c[5] ? row.c[5].v : '';
+                    const foto = row.c[5] ? String(row.c[5].v) : '';
 
-                    const id = `${koleksi}-${nama}`;
+                    let id;
+                    if (namaRaw === '' || namaRaw === '-' || namaRaw.toLowerCase() === 'motif baru') {
+                        id = `standalone-${uniqueID++}`;
+                    } else {
+                        id = `${koleksi}-${namaRaw}`;
+                    }
+
                     if (!tempGroup[id]) {
-                        tempGroup[id] = { koleksi, nama, variasi: [] };
+                        tempGroup[id] = { koleksi, nama: namaRaw || 'Motif Baru', variasi: [] };
                     }
                     tempGroup[id].variasi.push({ ukuran, harga, stok, foto });
                 });
@@ -82,20 +94,8 @@
                 buatTombolFilter();
                 tampilkanKatalog(semuaProduk);
             } catch (err) {
-                document.getElementById('katalog-container').innerHTML = "Gagal memuat data.";
+                document.getElementById('katalog-container').innerHTML = "Terjadi kesalahan memuat data.";
             }
-        }
-
-        function buatTombolFilter() {
-            const bar = document.getElementById('filter-bar');
-            const list = [...new Set(semuaProduk.map(p => p.koleksi))];
-            list.forEach(k => {
-                const btn = document.createElement('button');
-                btn.innerText = k.toUpperCase();
-                btn.className = "filter-btn whitespace-nowrap px-6 py-2 rounded-full border border-gray-200 dark:border-zinc-700 text-xs font-bold transition bg-white dark:bg-zinc-800";
-                btn.onclick = (e) => filterKoleksi(k, e.target);
-                bar.appendChild(btn);
-            });
         }
 
         function tampilkanKatalog(data) {
@@ -105,9 +105,15 @@
                 const cid = `c${index}`;
                 const def = item.variasi[0];
                 container.innerHTML += `
-                <div class="bg-white dark:bg-zinc-800 rounded-2xl overflow-hidden shadow-sm border border-gray-100 dark:border-zinc-700 flex flex-col shadow-md">
-                    <div class="relative aspect-[3/4] bg-gray-100 dark:bg-zinc-900">
-                        <img id="${cid}-img" src="${def.foto}" class="w-full h-full object-cover cursor-zoom-in" onclick="openZoom(this.src)">
+                <div class="bg-white dark:bg-zinc-800 rounded-2xl overflow-hidden shadow-sm border border-gray-100 dark:border-zinc-700 flex flex-col hover:shadow-md transition">
+                    <div class="relative aspect-[3/4] bg-gray-200 dark:bg-zinc-900 overflow-hidden">
+                        <img id="${cid}-img" 
+                             src="${def.foto}" 
+                             loading="lazy"
+                             class="w-full h-full object-cover cursor-zoom-in" 
+                             onload="this.classList.add('loaded')"
+                             onclick="openZoom(this.src)" 
+                             onerror="this.src='https://via.placeholder.com/400x500?text=Foto+Error'">
                         <div class="absolute bottom-2 left-2 flex flex-wrap gap-1 pr-8">
                             ${item.variasi.map((v, i) => `
                                 <button onclick="updVar('${cid}', '${v.ukuran}', '${v.harga}', '${v.stok}', this, '${v.foto}')" 
@@ -119,12 +125,12 @@
                     </div>
                     <div class="p-3 flex flex-col flex-grow">
                         <p class="text-[9px] font-black text-blue-500 uppercase tracking-tighter">${item.koleksi}</p>
-                        <h3 class="text-xs font-bold mb-2 uppercase line-clamp-2">${item.nama}</h3>
+                        <h3 class="text-xs font-bold mb-2 uppercase line-clamp-2 leading-tight">${item.nama}</h3>
                         <div class="mt-auto pt-2 border-t dark:border-zinc-700">
                             <p id="${cid}-h" class="text-sm font-black italic">Rp ${formatRupiah(def.harga)}</p>
                             <div class="flex items-center justify-between mt-2">
-                                <span id="${cid}-s" class="text-[9px] font-bold ${def.stok!='0'?'text-green-600':'text-red-500'}">● STOK: ${def.stok}</span>
-                                <a id="${cid}-wa" href="https://wa.me/${WA_NUMBER}?text=Halo, tanya karpet ${item.koleksi} ${item.nama} ukuran ${def.ukuran}. Foto: ${def.foto}" class="bg-green-500 text-white p-1.5 rounded-lg shadow-md">
+                                <span id="${cid}-s" class="text-[9px] font-bold ${def.stok!='0'?'text-green-600':'text-red-500'} uppercase">● STOK: ${def.stok}</span>
+                                <a id="${cid}-wa" href="https://wa.me/${WA_NUMBER}?text=Halo Aneka Karpet Indah, saya mau tanya karpet ${item.koleksi} ${item.nama} ukuran ${def.ukuran}. %0AFoto: ${def.foto}" class="bg-green-500 text-white p-1.5 rounded-lg shadow-sm">
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.588-5.946 0-6.556 5.332-11.891 11.891-11.891 3.181 0 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.481 8.403 0 6.556-5.332 11.891-11.891 11.891-2.003 0-3.976-.506-5.713-1.468l-6.18 1.686zm10.37-3.935c1.697 0 3.354-.456 4.798-1.319l.344-.205 3.568.935-.952-3.48.226-.359c.953-1.517 1.456-3.284 1.456-5.101 0-5.181-4.215-9.395-9.395-9.395-2.51 0-4.87.98-6.642 2.753-1.774 1.773-2.751 4.133-2.751 6.642 0 1.942.569 3.837 1.644 5.47l.255.388-1.091 3.987 4.085-1.116.379.225c1.472.873 3.161 1.334 4.877 1.334z"/></svg>
                                 </a>
                             </div>
@@ -135,43 +141,55 @@
         }
 
         function updVar(cid, u, h, s, btn, f) {
+            const img = document.getElementById(`${cid}-img`);
+            img.classList.remove('loaded'); // Reset animasi saat ganti foto
             document.getElementById(`${cid}-h`).innerText = `Rp ${formatRupiah(h)}`;
-            document.getElementById(`${cid}-img`).src = f;
+            img.src = f;
             const sel = document.getElementById(`${cid}-s`);
             sel.innerText = `● STOK: ${s}`;
-            sel.className = `text-[9px] font-bold ${s!='0'?'text-green-600':'text-red-500'}`;
+            sel.className = `text-[9px] font-bold ${s!='0'?'text-green-600':'text-red-500'} uppercase`;
             
             const card = btn.closest('.bg-white, .dark\\:bg-zinc-800');
             const kol = card.querySelector('p').innerText;
             const nam = card.querySelector('h3').innerText;
-            document.getElementById(`${cid}-wa`).href = `https://wa.me/${WA_NUMBER}?text=Halo, tanya karpet ${kol} ${nam} ukuran ${u}. Foto: ${f}`;
+            document.getElementById(`${cid}-wa`).href = `https://wa.me/${WA_NUMBER}?text=Halo Aneka Karpet Indah, saya mau tanya karpet ${kol} ${nam} ukuran ${u}. %0AFoto: ${f}`;
             
             btn.parentElement.querySelectorAll('.ukuran-btn').forEach(b => b.classList.remove('selected'));
             btn.classList.add('selected');
         }
 
+        // Fungsi filter, cari, zoom, dark mode tetap ada...
+        function buatTombolFilter() {
+            const bar = document.getElementById('filter-bar');
+            bar.innerHTML = '<button onclick="filterKoleksi(\'Semua\', this)" class="filter-btn active whitespace-nowrap px-6 py-2 rounded-full border border-gray-200 dark:border-zinc-700 text-xs font-bold transition shadow-sm bg-white dark:bg-zinc-800">SEMUA</button>';
+            const list = [...new Set(semuaProduk.map(p => p.koleksi))];
+            list.forEach(k => {
+                const btn = document.createElement('button');
+                btn.innerText = k.toUpperCase();
+                btn.className = "filter-btn whitespace-nowrap px-6 py-2 rounded-full border border-gray-200 dark:border-zinc-700 text-xs font-bold transition bg-white dark:bg-zinc-800";
+                btn.onclick = (e) => filterKoleksi(k, e.target);
+                bar.appendChild(btn);
+            });
+        }
         function filterKoleksi(kat, btn) {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             tampilkanKatalog(kat === 'Semua' ? semuaProduk : semuaProduk.filter(p => p.koleksi === kat));
         }
-
         function cariProduk() {
             const key = document.getElementById('search-input').value.toLowerCase();
             tampilkanKatalog(semuaProduk.filter(p => p.nama.toLowerCase().includes(key) || p.koleksi.toLowerCase().includes(key)));
         }
-
         function openZoom(s) {
             document.getElementById('img-zoom').src = s;
             document.getElementById('modal-zoom').style.display = 'flex';
         }
-
         function toggleDarkMode() {
             document.documentElement.classList.toggle('dark');
             localStorage.setItem('theme', document.documentElement.classList.contains('dark')?'dark':'light');
         }
-
         if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
+        
         ambilData();
     </script>
 </body>
