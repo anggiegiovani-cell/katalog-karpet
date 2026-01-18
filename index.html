@@ -22,18 +22,22 @@
 
     <header class="bg-white dark:bg-zinc-800 shadow-md sticky top-0 z-50">
         <div class="p-4 flex flex-col gap-3">
-            <div class="flex items-center justify-between">
+            <div class="relative flex items-center justify-center min-h-[48px]">
+                <div class="absolute left-0 w-10"></div>
+                
                 <img src="https://i.ibb.co.com/Gv2LpsVy/Aneka-Karpet-Indah-logo-page-0001.jpg" alt="Aneka Karpet Indah" class="h-12 w-auto object-contain">
                 
-                <button onclick="toggleDarkMode()" class="p-2 rounded-xl bg-gray-100 dark:bg-zinc-700 text-gray-800 dark:text-yellow-400">
+                <button onclick="toggleDarkMode()" class="absolute right-0 p-2 rounded-xl bg-gray-100 dark:bg-zinc-700 text-gray-800 dark:text-yellow-400">
                     <svg id="theme-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
                 </button>
             </div>
+
             <div class="relative">
                 <input type="text" id="search-input" onkeyup="cariProduk()" placeholder="Cari merk atau motif..." class="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-gray-50 dark:bg-zinc-700 border-none focus:ring-2 focus:ring-blue-500 text-sm">
                 <svg class="w-4 h-4 absolute left-3.5 top-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
             </div>
         </div>
+
         <div id="filter-bar" class="flex gap-2 overflow-x-auto px-4 pb-4 no-scrollbar">
             <button onclick="filterKoleksi('Semua', this)" class="filter-btn active whitespace-nowrap px-6 py-2 rounded-full border border-gray-200 dark:border-zinc-700 text-xs font-bold transition shadow-sm bg-white dark:bg-zinc-800">SEMUA</button>
         </div>
