@@ -3,119 +3,209 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Katalog Karpet</title>
+    <title>Katalog Karpet Digital</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
     <style>
-        .filter-btn.active { background-color: #2563eb; color: white; border-color: #2563eb; }
+        .filter-btn.active { background-color: #3b82f6; color: white; border-color: #3b82f6; }
+        .ukuran-btn.selected { background-color: #3b82f6; color: white; border-color: #3b82f6; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3); }
+        #modal-zoom { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 100; cursor: zoom-out; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .loading-spinner { border-top-color: #2563eb; animation: spinner 0.8s linear infinite; }
-        @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body class="bg-gray-100 dark:bg-zinc-900 min-h-screen pb-20 font-sans transition-colors duration-300">
 
-    <header class="bg-white shadow-sm sticky top-0 z-30">
-        <div class="p-4 text-center">
-            <h1 class="text-xl font-black text-gray-800 tracking-tight uppercase">Katalog Karpet</h1>
+    <header class="bg-white dark:bg-zinc-800 shadow-md sticky top-0 z-50">
+        <div class="p-4 flex flex-col gap-3">
+            <div class="flex items-center justify-between">
+                <h1 class="text-xl font-black tracking-tighter text-gray-900 dark:text-white uppercase italic">Katalog Karpet</h1>
+                <button onclick="toggleDarkMode()" class="p-2 rounded-xl bg-gray-100 dark:bg-zinc-700 text-gray-800 dark:text-yellow-400 shadow-inner">
+                    <svg id="theme-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                </button>
+            </div>
+            
+            <div class="relative">
+                <input type="text" id="search-input" onkeyup="cariProduk()" placeholder="Cari motif karpet..." class="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-gray-50 dark:bg-zinc-700 border-none focus:ring-2 focus:ring-blue-500 text-sm dark:text-white">
+                <svg class="w-4 h-4 absolute left-3.5 top-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </div>
         </div>
-        <div id="filter-bar" class="flex gap-2 overflow-x-auto px-4 pb-3 no-scrollbar">
-            <button onclick="filterProduk('Semua', this)" class="filter-btn active whitespace-nowrap px-4 py-2 rounded-full border border-gray-300 text-xs font-bold transition bg-white">SEMUA</button>
+
+        <div id="filter-bar" class="flex gap-2 overflow-x-auto px-4 pb-4 no-scrollbar">
+            <button onclick="filterKoleksi('Semua', this)" class="filter-btn active whitespace-nowrap px-6 py-2 rounded-full border border-gray-200 dark:border-zinc-700 text-xs font-bold transition-all shadow-sm bg-white dark:bg-zinc-800 dark:text-gray-300">SEMUA</button>
         </div>
     </header>
 
     <main class="p-3 max-w-5xl mx-auto">
-        <div id="loading" class="flex flex-col items-center justify-center mt-20">
-            <div class="loading-spinner w-10 h-10 border-4 border-gray-200 rounded-full mb-3"></div>
-            <p class="text-gray-500 text-sm">Sinkronisasi stok...</p>
+        <div id="katalog-container" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div class="col-span-full py-20 text-center">
+                <div class="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+                <p class="text-gray-500 dark:text-zinc-400 text-sm font-bold">Sinkronisasi Data...</p>
+            </div>
         </div>
-
-        <div id="katalog-container" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 hidden"></div>
     </main>
+
+    <div id="modal-zoom" onclick="this.style.display='none'">
+        <img id="img-zoom" class="w-full h-full object-contain p-4" src="" alt="Zoom">
+    </div>
 
     <script>
         const SHEET_ID = '1iLJWtfJntcjZalA7q-FFIUNe8BXGT40za7kMeELXfJk';
-        const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
-        const NOMOR_WA = '628XXXXXXXXXX'; // Ganti dengan nomor Anda
+        const WA_NUMBER = '628XXXXXXXXXX'; // Ganti dengan nomor WhatsApp Anda
+        const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
         let semuaProduk = [];
+        let filteredData = [];
 
-        async function initKatalog() {
+        async function ambilData() {
             try {
-                const response = await fetch(SHEET_URL);
-                const text = await response.text();
-                const json = JSON.parse(text.substr(47).slice(0, -2));
+                const res = await fetch(URL);
+                const txt = await res.text();
+                const json = JSON.parse(txt.substring(47, txt.length - 2));
                 const rows = json.table.rows;
-
-                semuaProduk = rows.filter(row => row.c[0] !== null).map(row => ({
-                    koleksi: row.c[0] ? String(row.c[0].v) : '',
-                    nama: row.c[1] ? String(row.c[1].v) : '',
-                    ukuran: row.c[2] ? String(row.c[2].v) : '',
-                    harga: row.c[3] ? row.c[3].f || row.c[3].v : '0',
-                    stok: row.c[4] ? String(row.c[4].v) : '0',
-                    foto: row.c[5] ? String(row.c[5].v) : ''
-                }));
-
-                tampilkanTombolFilter();
-                tampilkanProduk(semuaProduk);
                 
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('katalog-container').classList.remove('hidden');
-            } catch (e) {
-                document.getElementById('loading').innerHTML = '<p class="text-red-500">Gagal memuat data. Pastikan Sheet sudah dipublikasikan.</p>';
+                let tempGroup = {};
+                let standaloneCounter = 0;
+
+                rows.forEach(row => {
+                    const koleksi = row.c[0] ? String(row.c[0].v) : 'Lainnya';
+                    const nama = row.c[1] ? String(row.c[1].v) : '';
+                    const ukuran = row.c[2] ? String(row.c[2].v) : '-';
+                    const harga = row.c[3] ? row.c[3].v : '0';
+                    const stok = row.c[4] ? String(row.c[4].v) : '0';
+                    const foto = row.c[5] ? String(row.c[5].v) : '';
+
+                    const id = nama.trim() === "" ? `item-${standaloneCounter++}` : `${koleksi}-${nama}`;
+
+                    if (!tempGroup[id]) {
+                        tempGroup[id] = { koleksi, nama: nama || 'Tanpa Nama', variasi: [] };
+                    }
+                    tempGroup[id].variasi.push({ ukuran, harga, stok, foto });
+                });
+
+                semuaProduk = Object.values(tempGroup);
+                buatTombolFilter();
+                tampilkanKatalog(semuaProduk);
+            } catch (err) {
+                console.error(err);
+                document.getElementById('katalog-container').innerHTML = `<p class="col-span-full text-center text-red-500 py-10">Gagal memuat data. Periksa Sheet ID dan Publikasi.</p>`;
             }
         }
 
-        function tampilkanTombolFilter() {
-            const filterBar = document.getElementById('filter-bar');
-            const kategori = [...new Set(semuaProduk.map(p => p.koleksi))];
-            kategori.forEach(k => {
+        function buatTombolFilter() {
+            const bar = document.getElementById('filter-bar');
+            const listKoleksi = [...new Set(semuaProduk.map(p => p.koleksi))];
+            listKoleksi.forEach(k => {
                 const btn = document.createElement('button');
                 btn.innerText = k.toUpperCase();
-                btn.className = "filter-btn whitespace-nowrap px-4 py-2 rounded-full border border-gray-300 text-xs font-bold transition bg-white";
-                btn.onclick = (e) => filterProduk(k, e.target);
-                filterBar.appendChild(btn);
+                btn.className = "filter-btn whitespace-nowrap px-6 py-2 rounded-full border border-gray-200 dark:border-zinc-700 text-xs font-bold transition-all shadow-sm bg-white dark:bg-zinc-800 dark:text-gray-300";
+                btn.onclick = (e) => filterKoleksi(k, e.target);
+                bar.appendChild(btn);
             });
         }
 
-        function filterProduk(kat, btn) {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            const filtered = kat === 'Semua' ? semuaProduk : semuaProduk.filter(p => p.koleksi === kat);
-            tampilkanProduk(filtered);
-        }
-
-        function tampilkanProduk(data) {
+        function tampilkanKatalog(data) {
             const container = document.getElementById('katalog-container');
             container.innerHTML = '';
-            data.forEach(item => {
-                const formatHarga = Number(item.harga.replace(/[^0-9.-]+/g,"")).toLocaleString('id-ID');
-                const waMsg = `Halo admin, saya mau tanya karpet ${item.koleksi} ${item.nama} ukuran ${item.ukuran}. %0A%0AFoto: ${item.foto}`;
+
+            data.forEach((item, index) => {
+                const cardID = `card-${index}`;
+                const varUtama = item.variasi[0];
+                const formatHarga = parseInt(varUtama.harga).toLocaleString('id-ID');
                 
-                container.innerHTML += `
-                    <div class="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-200 flex flex-col">
-                        <div class="relative aspect-square">
-                            <img src="${item.foto}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/400?text=Gambar+Error'">
-                            <div class="absolute top-2 left-2 bg-black/50 text-white text-[10px] px-2 py-1 rounded font-bold">${item.ukuran}</div>
+                const card = `
+                <div class="bg-white dark:bg-zinc-800 rounded-2xl overflow-hidden shadow-sm border border-gray-100 dark:border-zinc-700 flex flex-col transition-all hover:shadow-lg">
+                    <div class="relative aspect-[3/4] bg-gray-200 dark:bg-zinc-900 group">
+                        <img id="${cardID}-img" src="${varUtama.foto}" class="w-full h-full object-cover cursor-zoom-in" onclick="openZoom(this.src)" onerror="this.src='https://via.placeholder.com/400x500?text=Gambar+Error'">
+                        <div class="absolute bottom-2 left-2 flex flex-wrap gap-1 pr-10">
+                            ${item.variasi.map((v, i) => `
+                                <button onclick="updVar('${cardID}', '${v.ukuran}', '${v.harga}', '${v.stok}', this, '${v.foto}')" 
+                                class="ukuran-btn text-[9px] px-2 py-1 rounded bg-white/90 dark:bg-zinc-800/90 font-bold border border-gray-200 dark:border-zinc-600 dark:text-white ${i === 0 ? 'selected' : ''}">
+                                    ${v.ukuran}
+                                </button>
+                            `).join('')}
                         </div>
-                        <div class="p-3 flex flex-col flex-grow">
-                            <p class="text-[9px] font-bold text-blue-600 uppercase mb-1">${item.koleksi}</p>
-                            <h3 class="text-xs font-bold text-gray-800 mb-2 line-clamp-2">${item.nama}</h3>
-                            <div class="mt-auto">
-                                <p class="text-sm font-black text-gray-900">Rp ${formatHarga}</p>
-                                <div class="flex items-center justify-between mt-3 pt-2 border-t border-gray-100">
-                                    <span class="text-[10px] font-bold ${item.stok != '0' ? 'text-green-600' : 'text-red-600'}">
-                                        ● ${item.stok != '0' ? 'READY' : 'HABIS'}
-                                    </span>
-                                    <a href="https://wa.me/${NOMOR_WA}?text=${waMsg}" class="bg-green-500 text-white p-2 rounded-lg">
-                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.588-5.946 0-6.556 5.332-11.891 11.891-11.891 3.181 0 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.481 8.403 0 6.556-5.332 11.891-11.891 11.891-2.003 0-3.976-.506-5.713-1.468l-6.18 1.686zm10.37-3.935c1.697 0 3.354-.456 4.798-1.319l.344-.205 3.568.935-.952-3.48.226-.359c.953-1.517 1.456-3.284 1.456-5.101 0-5.181-4.215-9.395-9.395-9.395-2.51 0-4.87.98-6.642 2.753-1.774 1.773-2.751 4.133-2.751 6.642 0 1.942.569 3.837 1.644 5.47l.255.388-1.091 3.987 4.085-1.116.379.225c1.472.873 3.161 1.334 4.877 1.334z"/></svg>
-                                    </a>
-                                </div>
+                    </div>
+                    <div class="p-3 flex flex-col flex-grow">
+                        <p class="text-[9px] font-black text-blue-500 uppercase tracking-tighter mb-0.5">${item.koleksi}</p>
+                        <h3 class="text-xs font-bold text-gray-800 dark:text-gray-100 mb-2 uppercase line-clamp-2 leading-tight">${item.nama}</h3>
+                        <div class="mt-auto">
+                            <div class="flex items-baseline gap-1">
+                                <span class="text-[10px] text-gray-400 font-bold">Rp</span>
+                                <span id="${cardID}-h" class="text-sm font-black text-gray-900 dark:text-white">${formatHarga}</span>
+                            </div>
+                            <div class="flex items-center justify-between mt-3 pt-2 border-t border-gray-50 dark:border-zinc-700">
+                                <span id="${cardID}-s" class="text-[9px] font-bold uppercase italic ${varUtama.stok != '0' ? 'text-green-600' : 'text-red-500'}">
+                                    ● ${varUtama.stok != '0' ? 'Stok: '+varUtama.stok : 'Habis'}
+                                </span>
+                                <a id="${cardID}-wa" href="https://wa.me/${WA_NUMBER}?text=Halo Admin, saya mau tanya karpet ${item.koleksi} ${item.nama} ukuran ${varUtama.ukuran}. %0AFoto: ${varUtama.foto}" 
+                                   class="bg-green-500 text-white p-1.5 rounded-lg shadow-sm hover:scale-110 transition-transform">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.588-5.946 0-6.556 5.332-11.891 11.891-11.891 3.181 0 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.481 8.403 0 6.556-5.332 11.891-11.891 11.891-2.003 0-3.976-.506-5.713-1.468l-6.18 1.686zm10.37-3.935c1.697 0 3.354-.456 4.798-1.319l.344-.205 3.568.935-.952-3.48.226-.359c.953-1.517 1.456-3.284 1.456-5.101 0-5.181-4.215-9.395-9.395-9.395-2.51 0-4.87.98-6.642 2.753-1.774 1.773-2.751 4.133-2.751 6.642 0 1.942.569 3.837 1.644 5.47l.255.388-1.091 3.987 4.085-1.116.379.225c1.472.873 3.161 1.334 4.877 1.334z"/></svg>
+                                </a>
                             </div>
                         </div>
-                    </div>`;
+                    </div>
+                </div>`;
+                container.innerHTML += card;
             });
         }
-        initKatalog();
+
+        function updVar(cid, u, h, s, btn, foto) {
+            document.getElementById(`${cid}-h`).innerText = parseInt(h).toLocaleString('id-ID');
+            const sel = document.getElementById(`${cid}-s`);
+            sel.innerText = `● ${s != '0' ? 'Stok: '+s : 'Habis'}`;
+            sel.className = `text-[9px] font-bold uppercase italic ${s != '0' ? 'text-green-600' : 'text-red-500'}`;
+            
+            // FITUR BARU: Update Foto Kartu saat Ukuran di Klik
+            const img = document.getElementById(`${cid}-img`);
+            img.src = foto;
+            img.onclick = () => openZoom(foto);
+
+            const card = btn.closest('.bg-white, .dark\\:bg-zinc-800');
+            const koleksi = card.querySelector('p').innerText;
+            const nama = card.querySelector('h3').innerText;
+            
+            document.getElementById(`${cid}-wa`).href = `https://wa.me/${WA_NUMBER}?text=Halo Admin, saya mau tanya karpet ${koleksi} ${nama} ukuran ${u}. %0AFoto: ${foto}`;
+            
+            btn.parentElement.querySelectorAll('.ukuran-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+        }
+
+        function filterKoleksi(kat, btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const res = kat === 'Semua' ? semuaProduk : semuaProduk.filter(p => p.koleksi === kat);
+            tampilkanKatalog(res);
+        }
+
+        function cariProduk() {
+            const keyword = document.getElementById('search-input').value.toLowerCase();
+            const res = semuaProduk.filter(p => p.nama.toLowerCase().includes(keyword) || p.koleksi.toLowerCase().includes(keyword));
+            tampilkanKatalog(res);
+        }
+
+        function openZoom(src) {
+            document.getElementById('img-zoom').src = src;
+            document.getElementById('modal-zoom').style.display = 'flex';
+        }
+
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            document.getElementById('theme-icon').innerHTML = isDark 
+                ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />'
+                : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />';
+        }
+
+        // Auto Load Theme
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.classList.add('dark');
+            toggleDarkMode(); // Update icon
+        }
+
+        ambilData();
     </script>
 </body>
 </html>
