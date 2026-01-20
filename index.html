@@ -13,9 +13,12 @@
         .ukuran-btn.selected { background-color: #3b82f6; color: white; border-color: #3b82f6; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3); }
         #modal-zoom { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 100; cursor: zoom-out; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        img { transition: opacity 0.3s; }
-        img[loading="lazy"] { opacity: 0; }
+        /* Animasi transisi agar gambar tidak muncul mendadak */
+        img { transition: opacity 0.5s ease-in-out; opacity: 0; }
         img.loaded { opacity: 1; }
+        /* Placeholder saat gambar belum muncul */
+        .bg-placeholder { background-color: #e5e7eb; }
+        .dark .bg-placeholder { background-color: #27272a; }
     </style>
 </head>
 <body class="bg-gray-100 dark:bg-zinc-900 min-h-screen pb-20 font-sans transition-colors duration-300 text-gray-800 dark:text-gray-200">
@@ -23,37 +26,32 @@
     <header class="bg-white dark:bg-zinc-800 shadow-md sticky top-0 z-50">
         <div class="p-4 flex flex-col gap-3">
             <div class="relative flex items-center justify-center min-h-[48px]">
-                <div class="absolute left-0 w-10"></div>
-                
-                <img src="https://i.ibb.co.com/Gv2LpsVy/Aneka-Karpet-Indah-logo-page-0001.jpg" alt="Aneka Karpet Indah" class="h-12 w-auto object-contain">
-                
+                <img src="https://i.ibb.co.com/Gv2LpsVy/Aneka-Karpet-Indah-logo-page-0001.jpg" alt="Aneka Karpet Indah" class="h-12 w-auto object-contain loaded" style="opacity:1">
                 <button onclick="toggleDarkMode()" class="absolute right-0 p-2 rounded-xl bg-gray-100 dark:bg-zinc-700 text-gray-800 dark:text-yellow-400">
                     <svg id="theme-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
                 </button>
             </div>
-
             <div class="relative">
                 <input type="text" id="search-input" onkeyup="cariProduk()" placeholder="Cari merk atau motif..." class="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-gray-50 dark:bg-zinc-700 border-none focus:ring-2 focus:ring-blue-500 text-sm">
                 <svg class="w-4 h-4 absolute left-3.5 top-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
             </div>
         </div>
-
         <div id="filter-bar" class="flex gap-2 overflow-x-auto px-4 pb-4 no-scrollbar">
-            <button onclick="filterKoleksi('Semua', this)" class="filter-btn active whitespace-nowrap px-6 py-2 rounded-full border border-gray-200 dark:border-zinc-700 text-xs font-bold transition shadow-sm bg-white dark:bg-zinc-800">SEMUA</button>
+            <button onclick="filterKoleksi('Semua', this)" class="filter-btn active whitespace-nowrap px-6 py-2 rounded-full border border-gray-200 dark:border-zinc-700 text-xs font-bold transition shadow-sm bg-white dark:bg-zinc-800 uppercase">SEMUA</button>
         </div>
     </header>
 
     <main class="p-3 max-w-5xl mx-auto">
         <div id="katalog-container" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            <div class="col-span-full py-20 text-center text-gray-500">Memuat katalog...</div>
+            <div class="col-span-full py-20 text-center text-gray-500">Menyiapkan ratusan koleksi...</div>
         </div>
     </main>
 
-    <div id="modal-zoom" onclick="this.style.display='none'"><img id="img-zoom" class="w-full h-full object-contain p-4" src=""></div>
+    <div id="modal-zoom" onclick="this.style.display='none'"><img id="img-zoom" class="w-full h-full object-contain p-4 loaded" style="opacity:1" src=""></div>
 
     <script>
         const SHEET_ID = '1iLJWtfJntcjZalA7q-FFIUNe8BXGT40za7kMeELXfJk';
-        const WA_NUMBER = '628XXXXXXXXXX'; // GANTI NOMOR ANDA
+        const WA_NUMBER = '628XXXXXXXXXX'; 
         const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
         let semuaProduk = [];
@@ -110,8 +108,13 @@
                 const def = item.variasi[0];
                 container.innerHTML += `
                 <div class="bg-white dark:bg-zinc-800 rounded-2xl overflow-hidden shadow-sm border border-gray-100 dark:border-zinc-700 flex flex-col hover:shadow-md transition">
-                    <div class="relative aspect-[3/4] bg-gray-200 dark:bg-zinc-900 overflow-hidden">
-                        <img id="${cid}-img" src="${def.foto}" loading="lazy" class="w-full h-full object-cover cursor-zoom-in" onload="this.classList.add('loaded')" onclick="openZoom(this.src)" onerror="this.src='https://via.placeholder.com/400x500?text=Foto+Error'">
+                    <div class="relative aspect-[3/4] bg-placeholder overflow-hidden">
+                        <img id="${cid}-img" 
+                             data-src="${def.foto}" 
+                             src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                             class="lazy-img w-full h-full object-cover cursor-zoom-in" 
+                             onclick="openZoom(this.src)" 
+                             onerror="this.src='https://via.placeholder.com/400x500?text=Foto+Error'">
                         <div class="absolute bottom-2 left-2 flex flex-wrap gap-1 pr-8">
                             ${item.variasi.map((v, i) => `
                                 <button onclick="updVar('${cid}', '${v.ukuran}', '${v.harga}', '${v.stok}', this, '${v.foto}')" 
@@ -136,6 +139,24 @@
                     </div>
                 </div>`;
             });
+            initLazyLoading();
+        }
+
+        // FUNGSI UTAMA OPTIMASI: Intersection Observer
+        function initLazyLoading() {
+            const images = document.querySelectorAll('.lazy-img');
+            const observer = new IntersectionObserver((entries, obs) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        img.src = img.getAttribute('data-src');
+                        img.onload = () => img.classList.add('loaded');
+                        obs.unobserve(img);
+                    }
+                });
+            }, { rootMargin: '100px' }); // Memuat gambar 100px sebelum muncul di layar
+
+            images.forEach(img => observer.observe(img));
         }
 
         function updVar(cid, u, h, s, btn, f) {
@@ -143,6 +164,7 @@
             img.classList.remove('loaded');
             document.getElementById(`${cid}-h`).innerText = `Rp ${formatRupiah(h)}`;
             img.src = f;
+            img.onload = () => img.classList.add('loaded');
             const sel = document.getElementById(`${cid}-s`);
             sel.innerText = `● STOK: ${s}`;
             sel.className = `text-[9px] font-bold ${s!='0'?'text-green-600':'text-red-500'} uppercase`;
@@ -158,7 +180,7 @@
 
         function buatTombolFilter() {
             const bar = document.getElementById('filter-bar');
-            bar.innerHTML = '<button onclick="filterKoleksi(\'Semua\', this)" class="filter-btn active whitespace-nowrap px-6 py-2 rounded-full border border-gray-200 dark:border-zinc-700 text-xs font-bold transition shadow-sm bg-white dark:bg-zinc-800">SEMUA</button>';
+            bar.innerHTML = '<button onclick="filterKoleksi(\'Semua\', this)" class="filter-btn active whitespace-nowrap px-6 py-2 rounded-full border border-gray-200 dark:border-zinc-700 text-xs font-bold transition shadow-sm bg-white dark:bg-zinc-800 uppercase">SEMUA</button>';
             const list = [...new Set(semuaProduk.map(p => p.koleksi))];
             list.forEach(k => {
                 const btn = document.createElement('button');
