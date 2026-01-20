@@ -13,7 +13,6 @@
         .ukuran-btn.selected { background-color: #3b82f6; color: white; border-color: #3b82f6; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3); }
         #modal-zoom { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 100; cursor: zoom-out; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        /* Optimasi transisi gambar */
         img { transition: opacity 0.5s ease-in-out; opacity: 0; }
         img.loaded { opacity: 1; }
         .bg-placeholder { background-color: #e5e7eb; }
@@ -26,7 +25,6 @@
         <div class="p-4 flex flex-col gap-3">
             <div class="relative flex items-center justify-center min-h-[48px]">
                 <img src="https://i.ibb.co.com/Gv2LpsVy/Aneka-Karpet-Indah-logo-page-0001.jpg" alt="Aneka Karpet Indah" class="h-12 w-auto object-contain loaded" style="opacity:1">
-                
                 <button onclick="toggleDarkMode()" class="absolute right-0 p-2 rounded-xl bg-gray-100 dark:bg-zinc-700 text-gray-800 dark:text-yellow-400">
                     <svg id="theme-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
                 </button>
@@ -43,7 +41,7 @@
 
     <main class="p-3 max-w-5xl mx-auto">
         <div id="katalog-container" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            <div class="col-span-full py-20 text-center text-gray-500">Menyiapkan ratusan koleksi...</div>
+            <div class="col-span-full py-20 text-center text-gray-500 italic">Menyinkronkan stok...</div>
         </div>
     </main>
 
@@ -52,7 +50,7 @@
     <script>
         const SHEET_ID = '1iLJWtfJntcjZalA7q-FFIUNe8BXGT40za7kMeELXfJk';
         const WA_NUMBER = '628XXXXXXXXXX'; // GANTI NOMOR WHATSAPP ANDA
-        const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx:out:json`;
+        const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
         let semuaProduk = [];
 
@@ -96,7 +94,7 @@
                 buatTombolFilter();
                 tampilkanKatalog(semuaProduk);
             } catch (err) {
-                document.getElementById('katalog-container').innerHTML = "Gagal memuat data.";
+                document.getElementById('katalog-container').innerHTML = "Kesalahan memuat data.";
             }
         }
 
@@ -128,14 +126,15 @@
                     </div>
                     <div class="p-3 flex flex-col flex-grow">
                         <p class="text-[9px] font-black text-blue-500 uppercase tracking-tighter">${item.koleksi}</p>
-                        <h3 class="text-xs font-bold mb-2 uppercase line-clamp-2 leading-tight">${item.nama}</h3>
+                        <h3 class="text-xs font-bold mb-2 uppercase line-clamp-2 leading-tight text-gray-900 dark:text-gray-100">${item.nama}</h3>
                         <div class="mt-auto pt-2 border-t dark:border-zinc-700">
                             <p id="${cid}-h" class="text-sm font-black italic">Rp ${formatRupiah(def.harga)}</p>
                             <div class="flex items-center justify-between mt-2">
                                 <span id="${cid}-s" class="text-[9px] font-bold ${def.stok!='0'?'text-green-600':'text-red-500'} uppercase">● STOK: ${def.stok}</span>
-                                <a id="${cid}-wa" href="${waLink}" class="bg-green-500 text-white p-1.5 rounded-lg shadow-sm hover:scale-110 transition-transform flex items-center justify-center">
+                                
+                                <a id="${cid}-wa" href="${waLink}" class="bg-white border border-gray-100 shadow-sm p-1 rounded-lg hover:scale-110 transition-transform flex items-center justify-center">
                                     <img src="https://upload.wikimedia.org/wikipedia/commons/a/a7/2062095_application_chat_communication_logo_whatsapp_icon.svg" 
-                                         alt="WA" class="w-4 h-4 brightness-0 invert loaded" style="opacity:1">
+                                         alt="WhatsApp" class="w-5 h-5 loaded" style="opacity:1">
                                 </a>
                             </div>
                         </div>
