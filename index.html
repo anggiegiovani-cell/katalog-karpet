@@ -27,19 +27,6 @@
             --card-bg:   #FDFAF5;
             --shadow:    rgba(61,43,31,0.10);
         }
-        .dark {
-            --bg:        #201810;
-            --surface:   #2C1F14;
-            --border:    #4A3728;
-            --text:      #EDE8DC;
-            --muted:     #9B8B79;
-            --accent:    #D4856A;
-            --accent2:   #95A882;
-            --header-bg: #241A10;
-            --card-bg:   #2C1F14;
-            --shadow:    rgba(0,0,0,0.35);
-        }
-
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
@@ -48,7 +35,6 @@
             font-family: 'DM Sans', sans-serif;
             min-height: 100vh;
             padding-bottom: 5rem;
-            transition: background-color 0.3s, color 0.3s;
             position: relative;
         }
 
@@ -75,14 +61,14 @@
             font-size: 0.62rem; letter-spacing: 0.18em;
             color: var(--muted); text-transform: uppercase; margin-top: 0.15rem;
         }
-        .theme-btn {
+        .ig-btn {
             width: 2.2rem; height: 2.2rem; border-radius: 50%;
             border: 1.5px solid var(--border); background: var(--surface);
             display: flex; align-items: center; justify-content: center;
-            cursor: pointer; color: var(--muted);
-            transition: border-color 0.2s, color 0.2s; flex-shrink: 0;
+            color: var(--muted); transition: border-color 0.2s, color 0.2s; flex-shrink: 0;
+            text-decoration: none;
         }
-        .theme-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .ig-btn:hover { border-color: #E1306C; color: #E1306C; }
 
         .search-wrap { position: relative; margin-bottom: 0; }
         .search-wrap input {
@@ -144,7 +130,6 @@
             position: relative; aspect-ratio: 3/4; overflow: hidden;
             background-color: #E8E0D0;
         }
-        .dark .card-img-wrap { background-color: #2a1e14; }
         .card-img-wrap img { width: 100%; height: 100%; object-fit: cover; cursor: zoom-in; display: block; }
 
         .ukuran-overlay {
@@ -164,8 +149,7 @@
             color: var(--text); font-weight: 700; font-family: 'DM Sans', sans-serif;
             cursor: pointer; transition: all 0.15s; letter-spacing: 0.02em;
         }
-        .ukuran-btn:hover:not(.selected) { border-color: var(--accent); color: var(--accent); }
-        .ukuran-btn.selected { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 1px 4px rgba(196,113,74,0.35); }
+        .ukuran-btn:hover:not(.selected) { border-color: var(--accent); color: var(--accent); }        .ukuran-btn.selected { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 1px 4px rgba(196,113,74,0.35); }
 
         .card-body { padding: 0.6rem 0.7rem 0.7rem; display: flex; flex-direction: column; flex: 1; }
         .card-koleksi {
@@ -201,10 +185,6 @@
             background: linear-gradient(90deg, var(--border) 25%, #f0ece4 50%, var(--border) 75%);
             background-size: 200% 100%; animation: shimmer 1.6s infinite;
         }
-        .dark .skeleton {
-            background: linear-gradient(90deg, #3a2a1e 25%, #4a3728 50%, #3a2a1e 75%);
-            background-size: 200% 100%;
-        }
         @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
         /* ── LAZY IMG ── */
@@ -234,12 +214,14 @@
                          fetchpriority="high" decoding="async">
                     <p class="brand-tagline">CV. Aneka Karpet Indah</p>
                 </div>
-                <button class="theme-btn" onclick="toggleDarkMode()" aria-label="Toggle dark mode">
-                    <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                <a href="https://www.instagram.com/anekakarpetjogja/" target="_blank" rel="noopener noreferrer"
+                   class="ig-btn" aria-label="Instagram Aneka Karpet Indah">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                        <circle cx="12" cy="12" r="4"/>
+                        <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none"/>
                     </svg>
-                </button>
+                </a>
             </div>
             <div class="search-wrap">
                 <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -547,10 +529,21 @@
         }
 
         function cariProduk() {
+            const keyword = document.getElementById('search-input').value.trim();
+
+            // Opsi D: auto-reset filter koleksi jika ada keyword, tampilkan toast
+            const filterAktif = document.querySelector('.filter-btn.active');
+            const namaFilter = filterAktif ? filterAktif.textContent.trim() : 'SEMUA';
+            if (keyword && namaFilter !== 'SEMUA') {
+                // Reset semua filter ke SEMUA
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                document.querySelector('.filter-btn').classList.add('active');
+                tampilkanToast('Filter koleksi direset otomatis');
+            }
+
             const result = getFilteredData();
             document.getElementById('load-more-btn').style.display = 'inline-block';
             tampilkanKatalog(result);
-            const keyword = document.getElementById('search-input').value.trim();
             setStatus(keyword ? `${result.length} produk ditemukan untuk "${keyword}"` : `${result.length} produk tersedia`);
         }
 
@@ -566,11 +559,33 @@
         function closeZoom() { document.getElementById('modal-zoom').style.display='none'; document.body.style.overflow=''; }
         document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeZoom(); });
 
-        function toggleDarkMode() {
-            document.documentElement.classList.toggle('dark');
-            localStorage.setItem('theme', document.documentElement.classList.contains('dark')?'dark':'light');
+        // Toast notifikasi
+        function tampilkanToast(pesan) {
+            let toast = document.getElementById('toast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'toast';
+                toast.style.cssText = `
+                    position:fixed; bottom:1.5rem; left:50%; transform:translateX(-50%) translateY(20px);
+                    background:var(--text); color:var(--bg); padding:0.55rem 1.1rem;
+                    border-radius:999px; font-size:0.72rem; font-weight:600;
+                    font-family:'DM Sans',sans-serif; z-index:200; opacity:0;
+                    transition:opacity 0.25s ease, transform 0.25s ease;
+                    white-space:nowrap; pointer-events:none;
+                `;
+                document.body.appendChild(toast);
+            }
+            toast.textContent = pesan;
+            // Paksa reflow agar transisi berjalan
+            toast.offsetHeight;
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateX(-50%) translateY(0)';
+            clearTimeout(toast._timer);
+            toast._timer = setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(-50%) translateY(20px)';
+            }, 2500);
         }
-        if (localStorage.getItem('theme')==='dark') document.documentElement.classList.add('dark');
 
         ambilData();
     </script>
