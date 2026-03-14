@@ -180,6 +180,31 @@
         }
         .wa-btn:hover { transform: scale(1.12); box-shadow: 0 2px 8px var(--shadow); }
 
+        /* Share button */
+        .share-btn {
+            width: 1.9rem; height: 1.9rem; border-radius: 0.5rem;
+            background: var(--surface); border: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; transition: transform 0.15s, box-shadow 0.15s;
+            cursor: pointer; color: var(--muted);
+        }
+        .share-btn:hover { transform: scale(1.12); box-shadow: 0 2px 8px var(--shadow); color: var(--accent); border-color: var(--accent); }
+
+        /* Stok habis overlay */
+        .stok-habis-overlay {
+            position: absolute; inset: 0;
+            background: rgba(245,240,232,0.72);
+            display: flex; align-items: center; justify-content: center;
+            pointer-events: none;
+        }
+        .stok-habis-badge {
+            background: #e05252; color: #fff;
+            font-family: 'DM Sans', sans-serif; font-size: 0.62rem; font-weight: 700;
+            letter-spacing: 0.1em; text-transform: uppercase;
+            padding: 0.3rem 0.8rem; border-radius: 999px;
+            box-shadow: 0 2px 8px rgba(224,82,82,0.3);
+        }
+
         /* ── SKELETON ── */
         .skeleton {
             background: linear-gradient(90deg, var(--border) 25%, #f0ece4 50%, var(--border) 75%);
@@ -230,19 +255,35 @@
                 <input type="search" id="search-input" placeholder="Cari merk atau motif..."
                        autocomplete="off" autocorrect="off" spellcheck="false">
             </div>
-            <!-- Ukuran filter -->
-            <div class="search-wrap" style="margin-top:0.5rem">
-                <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:0.85rem;height:0.85rem">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/>
-                </svg>
-                <select id="ukuran-select" onchange="filterUkuran()"
-                        style="appearance:none;-webkit-appearance:none;width:100%;padding:0.58rem 2rem 0.58rem 2.4rem;border-radius:999px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.8rem;outline:none;transition:border-color 0.2s,box-shadow 0.2s;cursor:pointer">
-                    <option value="">Semua Ukuran</option>
-                </select>
-                <svg style="position:absolute;right:0.85rem;top:50%;transform:translateY(-50%);width:0.8rem;height:0.8rem;color:var(--muted);pointer-events:none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                </svg>
-            </div>
+                <!-- Ukuran filter + Sort -->
+                <div style="display:flex; gap:0.5rem; margin-top:0.5rem">
+                    <div class="search-wrap" style="flex:1">
+                        <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:0.85rem;height:0.85rem">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/>
+                        </svg>
+                        <select id="ukuran-select" onchange="filterUkuran()"
+                                style="appearance:none;-webkit-appearance:none;width:100%;padding:0.58rem 2rem 0.58rem 2.4rem;border-radius:999px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.8rem;outline:none;transition:border-color 0.2s,box-shadow 0.2s;cursor:pointer">
+                            <option value="">Semua Ukuran</option>
+                        </select>
+                        <svg style="position:absolute;right:0.85rem;top:50%;transform:translateY(-50%);width:0.8rem;height:0.8rem;color:var(--muted);pointer-events:none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </div>
+                    <div class="search-wrap" style="flex:1">
+                        <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:0.85rem;height:0.85rem">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6h18M6 12h12M9 18h6"/>
+                        </svg>
+                        <select id="sort-select" onchange="sortProduk()"
+                                style="appearance:none;-webkit-appearance:none;width:100%;padding:0.58rem 2rem 0.58rem 2.4rem;border-radius:999px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.8rem;outline:none;transition:border-color 0.2s,box-shadow 0.2s;cursor:pointer">
+                            <option value="">Urutkan</option>
+                            <option value="asc">Harga Termurah</option>
+                            <option value="desc">Harga Termahal</option>
+                        </select>
+                        <svg style="position:absolute;right:0.85rem;top:50%;transform:translateY(-50%);width:0.8rem;height:0.8rem;color:var(--muted);pointer-events:none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </div>
+                </div>
         </div>
         <div class="filter-bar" id="filter-bar">
             <button class="filter-btn active">SEMUA</button>
@@ -404,6 +445,7 @@
 
         function buatCardHTML(item, idx) {
             const cid = `c${idx}`, def = item.variasi[0];
+            const stokHabis = def.stok == 0;
             const ukuranBtns = item.variasi.map((v, i) =>
                 `<button class="ukuran-btn ${i===0?'selected':''}" onclick="updVar('${cid}','${v.ukuran}','${v.harga}','${v.stok}',this,'${v.foto}')">${v.ukuran}</button>`
             ).join('');
@@ -416,6 +458,7 @@
                          alt="${item.nama}" loading="lazy" decoding="async"
                          onclick="openZoom(this.src)"
                          onerror="this.src='https://placehold.co/400x500/e8e0d0/9b8b79?text=Foto+Error'">
+                    ${stokHabis ? `<div class="stok-habis-overlay"><span class="stok-habis-badge">Stok Habis</span></div>` : ''}
                 </div>
                 <div class="card-body">
                     <p class="card-koleksi">${item.koleksi}</p>
@@ -429,10 +472,18 @@
                     <div class="card-footer">
                         <div>
                             <p id="${cid}-h" class="card-price">Rp ${formatRupiah(def.harga)}</p>
-                            <span id="${cid}-s" class="card-stok ${def.stok!=0?'stok-ada':'stok-habis'}">● Stok: ${def.stok}</span>
+                            <span id="${cid}-s" class="card-stok ${stokHabis?'stok-habis':'stok-ada'}">● Stok: ${def.stok}</span>
                         </div>
-                        <a id="${cid}-wa" href="${buildWaLink(item.koleksi,item.nama,def.ukuran,def.foto)}"
-                           class="wa-btn" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">${WA_ICON}</a>
+                        <div style="display:flex;gap:0.3rem;align-items:center">
+                            <button class="share-btn" onclick="shareProduct('${item.koleksi}','${item.nama}','${def.ukuran}','${def.foto}')" aria-label="Bagikan produk">
+                                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                                    <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                                </svg>
+                            </button>
+                            <a id="${cid}-wa" href="${buildWaLink(item.koleksi,item.nama,def.ukuran,def.foto)}"
+                               class="wa-btn" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">${WA_ICON}</a>
+                        </div>
                     </div>
                 </div>
             </div>`;
@@ -471,10 +522,30 @@
             sel.textContent = `● Stok: ${s}`;
             sel.className = `card-stok ${s != 0 ? 'stok-ada' : 'stok-habis'}`;
 
+            // Update overlay stok habis
+            const wrap = img.closest('.card-img-wrap');
+            let overlay = wrap.querySelector('.stok-habis-overlay');
+            if (s == 0) {
+                if (!overlay) {
+                    overlay = document.createElement('div');
+                    overlay.className = 'stok-habis-overlay';
+                    overlay.innerHTML = '<span class="stok-habis-badge">Stok Habis</span>';
+                    wrap.appendChild(overlay);
+                }
+            } else {
+                if (overlay) overlay.remove();
+            }
+
             const card = btn.closest('.card');
             const kol  = card.querySelector('.card-koleksi').textContent.trim();
             const nam  = card.querySelector('.card-nama').textContent.trim();
             document.getElementById(`${cid}-wa`).href = buildWaLink(kol, nam, u, f);
+
+            // Update share button data
+            const shareBtn = card.querySelector('.share-btn');
+            if (shareBtn) {
+                shareBtn.setAttribute('onclick', `shareProduct('${kol}','${nam}','${u}','${f}')`);
+            }
 
             btn.closest('.ukuran-overlay').querySelectorAll('.ukuran-btn').forEach(b => b.classList.remove('selected'));
             btn.classList.add('selected');
@@ -519,6 +590,31 @@
             });
         }
 
+        function sortProduk() {
+            const arah = document.getElementById('sort-select').value;
+            if (!arah) { tampilkanKatalog(getFilteredData()); return; }
+            const sorted = [...getFilteredData()].sort((a, b) => {
+                const hA = Math.min(...a.variasi.map(v => v.harga));
+                const hB = Math.min(...b.variasi.map(v => v.harga));
+                return arah === 'asc' ? hA - hB : hB - hA;
+            });
+            document.getElementById('load-more-btn').style.display = 'inline-block';
+            tampilkanKatalog(sorted);
+            setStatus(`${sorted.length} produk diurutkan ${arah==='asc'?'termurah':'termahal'}`);
+        }
+
+        function shareProduct(koleksi, nama, ukuran, foto) {
+            const teks = `Lihat karpet ${koleksi} ${nama} ukuran ${ukuran} di Aneka Karpet Indah!\n${window.location.href}`;
+            if (navigator.share) {
+                navigator.share({ title: `${koleksi} ${nama}`, text: teks, url: window.location.href })
+                    .catch(() => {});
+            } else {
+                navigator.clipboard.writeText(teks)
+                    .then(() => tampilkanToast('Link produk disalin!'))
+                    .catch(() => tampilkanToast('Gagal menyalin link'));
+            }
+        }
+
         function filterKoleksi(kat, btn) {
             document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
             btn.classList.add('active');
@@ -530,15 +626,26 @@
 
         function cariProduk() {
             const keyword = document.getElementById('search-input').value.trim();
+            const pesanReset = [];
 
-            // Opsi D: auto-reset filter koleksi jika ada keyword, tampilkan toast
+            // Reset filter koleksi jika aktif
             const filterAktif = document.querySelector('.filter-btn.active');
             const namaFilter = filterAktif ? filterAktif.textContent.trim() : 'SEMUA';
             if (keyword && namaFilter !== 'SEMUA') {
-                // Reset semua filter ke SEMUA
                 document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
                 document.querySelector('.filter-btn').classList.add('active');
-                tampilkanToast('Filter koleksi direset otomatis');
+                pesanReset.push('koleksi');
+            }
+
+            // Reset filter ukuran jika aktif
+            const ukuranSelect = document.getElementById('ukuran-select');
+            if (keyword && ukuranSelect.value !== '') {
+                ukuranSelect.value = '';
+                pesanReset.push('ukuran');
+            }
+
+            if (pesanReset.length > 0) {
+                tampilkanToast(`Filter ${pesanReset.join(' & ')} direset otomatis`);
             }
 
             const result = getFilteredData();
