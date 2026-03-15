@@ -449,8 +449,10 @@
                     const { ts, data } = JSON.parse(cached);
                     if (Date.now() - ts < CACHE_TTL) {
                         semuaProduk = data;
-                        buatTombolFilter(); tampilkanKatalog(semuaProduk);
-                        setStatus(`${semuaProduk.length} produk tersedia`); return;
+                        buatTombolFilter();
+                        bacaURLParam(); // cek URL param setelah data siap
+                        setStatus(`${semuaProduk.length} produk tersedia`);
+                        return;
                     }
                 }
             } catch (_) {}
@@ -478,11 +480,32 @@
 
                 semuaProduk = Object.values(tempGroup);
                 try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data: semuaProduk })); } catch(_) {}
-                buatTombolFilter(); tampilkanKatalog(semuaProduk);
+                buatTombolFilter();
+                bacaURLParam(); // cek URL param setelah data siap
                 setStatus(`${semuaProduk.length} produk tersedia`);
             } catch (err) {
                 document.getElementById('katalog-container').innerHTML =
                     `<p style="grid-column:1/-1;text-align:center;padding:4rem 1rem;color:var(--muted);font-style:italic">Gagal memuat data. Coba refresh halaman.</p>`;
+            }
+        }
+
+        // Baca URL parameter ?q= dan otomatis isi search + filter
+        function bacaURLParam() {
+            const params  = new URLSearchParams(window.location.search);
+            const q       = params.get('q');
+            if (q) {
+                const searchInput = document.getElementById('search-input');
+                searchInput.value = q;
+                const hasil = semuaProduk.filter(p =>
+                    p.nama.toLowerCase().includes(q.toLowerCase()) ||
+                    p.koleksi.toLowerCase().includes(q.toLowerCase())
+                );
+                tampilkanKatalog(hasil);
+                setStatus(`${hasil.length} produk ditemukan untuk "${q}"`);
+                // Scroll ke search bar agar customer langsung lihat hasil
+                setTimeout(() => searchInput.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
+            } else {
+                tampilkanKatalog(semuaProduk);
             }
         }
 
@@ -724,9 +747,14 @@
         }
 
         function shareProduct(koleksi, nama, ukuran, foto) {
-            const teks = `Lihat karpet ${koleksi} ${nama} ukuran ${ukuran} di Aneka Karpet Indah!\n${window.location.href}`;
+            // Buat URL dengan parameter ?q= agar saat dibuka langsung filter ke produk ini
+            const baseUrl = window.location.origin + window.location.pathname;
+            const query   = encodeURIComponent(koleksi + ' ' + nama);
+            const shareUrl = baseUrl + '?q=' + query;
+            const teks = `Lihat karpet ${koleksi} ${nama} ukuran ${ukuran} di Aneka Karpet Indah!\n${shareUrl}`;
+
             if (navigator.share) {
-                navigator.share({ title: `${koleksi} ${nama}`, text: teks, url: window.location.href })
+                navigator.share({ title: `${koleksi} ${nama}`, text: teks, url: shareUrl })
                     .catch(() => {});
             } else {
                 navigator.clipboard.writeText(teks)
