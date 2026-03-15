@@ -235,8 +235,10 @@
             border-top: 1px solid var(--border);
             display: flex; align-items: center; justify-content: space-between; gap: 0.4rem;
         }
-        .card-price { font-family: 'Lora', serif; font-size: 0.82rem; font-weight: 600; color: var(--text); font-style: italic; }
-        .card-stok  { font-size: 0.58rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+        .card-price-wrap { display: flex; flex-direction: column; gap: 0.02rem; }
+        .card-price-label { font-size: 0.54rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+        .card-price { font-family: 'Lora', serif; font-size: 0.9rem; font-weight: 600; color: var(--text); font-style: italic; line-height: 1.15; white-space: nowrap; }
+        .card-stok  { font-size: 0.58rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 0.18rem; display: block; }
         .stok-ada   { color: var(--accent2); }
         .stok-habis { color: #e05252; }
 
@@ -583,7 +585,10 @@
                     <div class="ukuran-overlay">${ukuranBtns}</div>`}
                     <div class="card-footer">
                         <div>
-                            <p id="${cid}-h" class="card-price">Rp ${formatRupiah(def.harga)}</p>
+                            <div class="card-price-wrap">
+                                <span class="card-price-label">Harga</span>
+                                <p id="${cid}-h" class="card-price">Rp ${formatRupiah(def.harga)}</p>
+                            </div>
                             <span id="${cid}-s" class="card-stok ${stokHabis?'stok-habis':'stok-ada'}">● Stok: ${def.stok}</span>
                         </div>
                         <div style="display:flex;gap:0.3rem;align-items:center">
