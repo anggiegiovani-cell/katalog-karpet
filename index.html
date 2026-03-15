@@ -444,10 +444,18 @@
         }
 
         function buatCardHTML(item, idx) {
-            const cid = `c${idx}`, def = item.variasi[0];
+            const cid = `c${idx}`;
+
+            // Opsi A: cek apakah ada filter ukuran aktif, pakai variasi yang sesuai sebagai default
+            const filterUkuran = document.getElementById('ukuran-select').value;
+            const variasiCocok = filterUkuran
+                ? (item.variasi.find(v => v.ukuran === filterUkuran) || item.variasi[0])
+                : item.variasi[0];
+            const def = variasiCocok;
+
             const stokHabis = def.stok == 0;
-            const ukuranBtns = item.variasi.map((v, i) =>
-                `<button class="ukuran-btn ${i===0?'selected':''}" onclick="updVar('${cid}','${v.ukuran}','${v.harga}','${v.stok}',this,'${v.foto}')">${v.ukuran}</button>`
+            const ukuranBtns = item.variasi.map((v) =>
+                `<button class="ukuran-btn ${v.ukuran === def.ukuran ? 'selected' : ''}" onclick="updVar('${cid}','${v.ukuran}','${v.harga}','${v.stok}',this,'${v.foto}')">${v.ukuran}</button>`
             ).join('');
             return `
             <div class="card">
