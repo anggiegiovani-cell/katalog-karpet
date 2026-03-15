@@ -233,12 +233,13 @@
         .card-footer {
             margin-top: auto; padding-top: 0.45rem;
             border-top: 1px solid var(--border);
-            display: flex; align-items: center; justify-content: space-between; gap: 0.4rem;
         }
+        .card-footer-price { margin-bottom: 0.4rem; }
+        .card-footer-actions { display: flex; align-items: center; justify-content: space-between; gap: 0.4rem; }
         .card-price-wrap { display: flex; flex-direction: column; gap: 0.02rem; }
         .card-price-label { font-size: 0.54rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
         .card-price { font-family: 'Lora', serif; font-size: 0.9rem; font-weight: 600; color: var(--text); font-style: italic; line-height: 1.15; white-space: nowrap; }
-        .card-stok  { font-size: 0.58rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 0.18rem; display: block; }
+        .card-stok  { font-size: 0.58rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
         .stok-ada   { color: var(--accent2); }
         .stok-habis { color: #e05252; }
 
@@ -584,22 +585,24 @@
                     </div>` : `
                     <div class="ukuran-overlay">${ukuranBtns}</div>`}
                     <div class="card-footer">
-                        <div>
+                        <div class="card-footer-price">
                             <div class="card-price-wrap">
                                 <span class="card-price-label">Harga</span>
                                 <p id="${cid}-h" class="card-price">Rp ${formatRupiah(def.harga)}</p>
                             </div>
-                            <span id="${cid}-s" class="card-stok ${stokHabis?'stok-habis':'stok-ada'}">● Stok: ${def.stok}</span>
                         </div>
-                        <div style="display:flex;gap:0.3rem;align-items:center">
-                            <button class="share-btn" onclick="shareProduct('${item.koleksi}','${item.nama}','${def.ukuran}','${def.foto}')" aria-label="Bagikan produk">
-                                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-                                    <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-                                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-                                </svg>
-                            </button>
-                            <a id="${cid}-wa" href="${buildWaLink(item.koleksi,item.nama,def.ukuran,def.foto)}"
-                               class="wa-btn" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">${WA_ICON}</a>
+                        <div class="card-footer-actions">
+                            <span id="${cid}-s" class="card-stok ${stokHabis?'stok-habis':'stok-ada'}">● Stok: ${def.stok}</span>
+                            <div style="display:flex;gap:0.3rem;align-items:center">
+                                <button class="share-btn" onclick="shareProduct('${item.koleksi}','${item.nama}','${def.ukuran}','${def.foto}')" aria-label="Bagikan produk">
+                                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                                        <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                                    </svg>
+                                </button>
+                                <a id="${cid}-wa" href="${buildWaLink(item.koleksi,item.nama,def.ukuran,def.foto)}"
+                                   class="wa-btn" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">${WA_ICON}</a>
+                            </div>
                         </div>
                     </div>
                 </div>
