@@ -636,9 +636,12 @@
         }
 
         function buildWaLink(k, n, u, f) {
-            // Encode setiap bagian secara terpisah agar karakter spesial di URL foto tidak merusak link
-            const pesan = 'Halo Aneka Karpet Indah, saya mau tanya karpet '
-                + k + ' ' + n + ' ukuran ' + u + '.\nFoto: ' + f;
+            const baseUrl    = window.location.origin + window.location.pathname;
+            const query      = encodeURIComponent(k + ' ' + n);
+            const katalogUrl = baseUrl + '?q=' + query;
+            const pesan      = 'Halo Aneka Karpet Indah, saya mau tanya karpet '
+                + k + ' ' + n + ' ukuran ' + u + '.'
+                + '\nLihat di katalog: ' + katalogUrl;
             return 'https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent(pesan);
         }
 
