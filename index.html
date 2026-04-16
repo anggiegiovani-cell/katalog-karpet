@@ -489,14 +489,35 @@
             }
         }
 
-        // Baca URL parameter ?q= dan otomatis isi search + filter
+        // Baca URL parameter ?q= dan ?koleksi= saat halaman dibuka
         function bacaURLParam() {
-            const params = new URLSearchParams(window.location.search);
-            const q      = params.get('q');
-            if (q && q.trim()) {
+            const params   = new URLSearchParams(window.location.search);
+            const q        = params.get('q');
+            const koleksi  = params.get('koleksi');
+
+            if (koleksi && koleksi.trim()) {
+                // Aktifkan filter tombol koleksi yang sesuai
+                const target = koleksi.trim().toUpperCase();
+                let cocok = false;
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.textContent.trim().toUpperCase() === target) {
+                        btn.classList.add('active');
+                        cocok = true;
+                    }
+                });
+                // Fallback ke SEMUA jika tidak ditemukan
+                if (!cocok) document.querySelector('.filter-btn').classList.add('active');
+
+                const hasil = semuaProduk.filter(p =>
+                    p.koleksi.toLowerCase() === koleksi.trim().toLowerCase()
+                );
+                tampilkanKatalog(hasil);
+                setStatus(`${hasil.length} produk koleksi "${koleksi.trim()}"`);
+
+            } else if (q && q.trim()) {
                 const searchInput = document.getElementById('search-input');
                 searchInput.value = q.trim();
-                // Gunakan logika filter yang sama dengan cariProduk
                 const keyword = q.trim().toLowerCase();
                 const hasil = semuaProduk.filter(p => {
                     const gabungan = (p.koleksi + ' ' + p.nama).toLowerCase();
@@ -507,6 +528,7 @@
                 tampilkanKatalog(hasil);
                 setStatus(`${hasil.length} produk ditemukan untuk "${q.trim()}"`);
                 setTimeout(() => searchInput.scrollIntoView({ behavior: 'smooth', block: 'start' }), 400);
+
             } else {
                 tampilkanKatalog(semuaProduk);
             }
@@ -519,13 +541,15 @@
         }
 
         function tampilkanKatalog(data) {
-            // Reset state pagination setiap kali filter/search berubah
-            dataTampil   = data;
-            halamanSaat  = 0;
+            // Produk stok habis (semua variasi habis) diletakkan di bawah
+            const adaStok   = data.filter(p => p.variasi.some(v => v.stok != 0));
+            const stokHabis = data.filter(p => p.variasi.every(v => v.stok == 0));
+            dataTampil  = [...adaStok, ...stokHabis];
+            halamanSaat = 0;
             if (lazyObserver) lazyObserver.disconnect();
 
             const container = document.getElementById('katalog-container');
-            if (!data.length) {
+            if (!dataTampil.length) {
                 container.innerHTML = `<p style="grid-column:1/-1;text-align:center;padding:4rem 1rem;color:var(--muted);font-style:italic">Produk tidak ditemukan.</p>`;
                 updateLoadMore();
                 return;
